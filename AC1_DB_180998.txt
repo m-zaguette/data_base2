@@ -1,0 +1,176 @@
+CREATE TABLE Raca(
+	IDRaca int Primary Key not null identity,
+	Nome varchar(100) not null,
+	Descricao varchar(150),
+	Origem varchar(150) not null
+);
+
+CREATE TABLE Habilidade(
+    IDHabilidade int Primary Key not null identity,
+    Nome varchar(200) not null,
+    Poder int
+);
+
+CREATE TABLE Classe(
+    IDClasse int Primary Key not null identity,
+    Nome varchar(100) not null,
+    Caracteristicas varchar(500),
+	IDHabilidade int not null,
+	CONSTRAINT IDHabilidade FOREIGN KEY (IDHabilidade) REFERENCES Habilidade(IDHabilidade)
+);
+
+CREATE TABLE Personagem(
+    IDPersonagem int Primary Key not null identity,
+    Nome varchar(100) not null,
+    Descricao varchar(500) not null,
+    DataNascimento datetime not null,
+	IDRaca int Not Null,
+	IDClasse int Not Null,
+	CONSTRAINT IDRaca FOREIGN KEY (IDRaca) REFERENCES Raca(IDRaca),
+	CONSTRAINT IDClasse FOREIGN KEY (IDClasse) REFERENCES Classe(IDClasse)
+);
+
+INSERT INTO Raca VALUES ('Anão','Baixa estatura', 'Guatemala');
+INSERT INTO Raca VALUES ('Elfo','Contato com natureza', 'Suécia');
+INSERT INTO Raca VALUES ('Meio-Elfo','Meio humano meio elfo', 'Somália');
+INSERT INTO Raca VALUES ('Halflings','Hobbit', 'Nova Zelândia');
+INSERT INTO Raca VALUES ('Humano','Nois mesmo', 'Brasil');
+INSERT INTO Raca VALUES ('Draconato','Dragaozao top', 'Alemanha');
+INSERT INTO Raca VALUES ('Gnomo','Baixinho também', 'Sri Lanka');
+INSERT INTO Raca VALUES ('Meio-Orc','99% bruto mas aquele 1% é suave', 'África do Sul');
+INSERT INTO Raca VALUES ('Tieflings','Ladrões nato', 'Carioca');
+
+INSERT INTO Habilidade VALUES ('Força',1);
+INSERT INTO Habilidade VALUES ('Destreza',2);
+INSERT INTO Habilidade VALUES ('Constituição',3);
+INSERT INTO Habilidade VALUES ('Inteligência',4);
+INSERT INTO Habilidade VALUES ('Carisma',5);
+INSERT INTO Habilidade VALUES ('Sabedoria',6);
+
+INSERT INTO Classe VALUES('Bárbaro','Um feroz guerreiro de origem primitiva que pode entrar em fúria durante uma batalha',1);
+INSERT INTO Classe VALUES('Bardo','Um místico inspirador que possui poderes que ecoam a música da criação',5);
+INSERT INTO Classe VALUES('Bruxo','Um portador de magia derivada de barganha com uma entidade planar',5);
+INSERT INTO Classe VALUES('Clérigo','Um campeão sacerdotal que empunha magia divina a serviço de um poder maior',6);
+INSERT INTO Classe VALUES('Druida','Um sacerdote da Crença Antiga, detentor dos poderes da natureza – luz da lua e crescimento das plantas, fogo e relâmpagos – e capaz de adotar formas animais',6);
+INSERT INTO Classe VALUES('Feiticeiro','Um conjurador que possui magia latente advinda de um dom ou linhagem',5);
+INSERT INTO Classe VALUES('Ladino','Um trapaceiro que utiliza de furtividade e astúcia para sobrepujar os obstáculos e inimigos',2);
+INSERT INTO Classe VALUES('Guerreiro','Um mestre do combate, perito em uma vasta gama de armas e armaduras',1);
+INSERT INTO Classe VALUES('Mago','Um usuário de magia escolado, capaz de manipular as estruturas da realidade',4);
+INSERT INTO Classe VALUES('Monge','Um mestre das artes marciais, utilizando o poder corporal para atingir a perfeição física e espiritual',2);
+INSERT INTO Classe VALUES('Paladino','Um guerreiro divino vinculado a um juramento sagrado',1);
+INSERT INTO Classe VALUES('Patrulheiro','Um guerreiro que utiliza de poderio marcial e magia natural para combater ameaças nos limites da civilização',2);
+
+INSERT INTO Personagem VALUES('Marcelo','Um mero aprendiz na arte da magia chamada BD','19980622',3,9);
+INSERT INTO Personagem VALUES('Marco Montebello', 'Mestre de Marcelo, possui diversos anos e habilidades na arte BD','19800101',2,9);
+
+SELECT * FROM Raca
+SELECT * FROM Habilidade
+SELECT * FROM Classe
+SELECT * FROM Personagem
+
+/*Atividade Storage Procedure */
+
+/* 1 - Criar uma Stored Procedure que recebe via parâmetro o nome do personagem e retorna (via
+select) o Nome do Personagem, Ano de Nascimento do Personagem, Nome da Raça, Nome da
+Classe e Nome da Habilidade */
+
+CREATE OR ALTER PROCEDURE Atividade1
+	@Nome varchar(30)
+AS
+Begin
+	SELECT Personagem.Nome, Personagem.DataNascimento, Raca.Nome, Raca.Descricao, Classe.Nome, Classe.Caracteristicas, Habilidade.Nome
+	FROM Personagem 
+	INNER JOIN Raca ON Personagem.IDRaca = Raca.IDRaca
+	INNER JOIN Classe ON Personagem.IDClasse = Classe.IDClasse
+	INNER JOIN Habilidade ON Personagem.IDRaca = Habilidade.IDHabilidade
+	WHERE Personagem.Nome = @Nome
+END
+
+EXEC Atividade1 'Marcelo'
+EXEC Atividade1 'Marco Montebello'
+
+/* 2 - Criar uma Stored Procedure que realizará a inserção de valores na tabela Raça. Dessa forma
+ela deve receber via parâmetro o Nome, Descrição e Origem da Raça.*/
+
+CREATE OR ALTER PROCEDURE Atividade2 
+	@Nome varchar(100),
+	@Descricao varchar(100),
+	@Origem varchar(150)
+AS
+BEGIN
+	INSERT INTO Raca VALUES (@Nome, @Descricao, @Origem)
+END
+
+EXEC Atividade2 'Teste','Teste testando','Cidade do teste'
+---SELECT * FROM Raca
+
+---DELETE FROM Raca WHERE Raca.IDRaca >9
+
+/* 3 - Criar uma Stored Procedure que realizará a exclusão de personagem através do ID
+(IDPersonagem) informado via parâmetro.*/
+CREATE OR ALTER PROCEDURE Atividade3
+	@IDPersonagem int
+AS
+BEGIN
+	DELETE FROM Personagem WHERE Personagem.IDPersonagem = @IDPersonagem
+END
+
+EXEC Atividade3 2
+---SELECT * FROM Personagem
+---INSERT INTO Personagem VALUES('Marco Montebello', 'Mestre de Marcelo, possui diversos anos e habilidades na arte BD','19800101',2,9);
+
+/* 4 - Criar uma Stored Procedure que realizará a atualização das informações da tabela Habilidade.
+Deverá ser informado via parâmetro o ID da Habilidade que será a atualizado e os novos
+valores para o nome e poder.
+a. O Nome não deverá ser atualizado caso o parâmetro informando possua menos de 5
+(cinco) caracteres.
+b. O Poder não deverá ser atualizado caso o parâmetro seja menor ou igual a 0 (zero).*/
+CREATE OR ALTER PROCEDURE Atividade4
+	@IDHabilidade int,
+	@Nome varchar(200),
+	@Poder int
+AS
+BEGIN
+	IF LEN(@Nome) >= 5 and @Poder > 0
+		UPDATE Habilidade
+		SET Habilidade.Nome = @Nome, Habilidade.Poder = @Poder
+		WHERE Habilidade.IDHabilidade = @IDHabilidade
+	ELSE
+		Print('Deu ruim meu parceiro')
+END
+
+EXEC Atividade4 1,'Parrudeza',10
+---SELECT * FROM Habilidade
+---EXEC Atividade4 1,'Força',1
+
+/* 5 - Criar uma Stored Procedure que recebe via para um inteiro referente ao ano de nascimento
+do personagem e retorna via parâmetro de OUTPUT a quantidade de personagens que
+nasceram no ano informado via parâmetro*/
+CREATE OR ALTER PROCEDURE Atividade5
+	@Ano datetime,
+	@Resultado int OUTPUT
+AS
+BEGIN
+	SET @Resultado = (SELECT COUNT(*) FROM Personagem WHERE YEAR(Personagem.DataNascimento) = @Ano)
+END
+
+DECLARE @Resultado int
+EXEC Atividade5 1998, @Resultado OUTPUT
+PRINT @Resultado
+
+/*Criar uma Stored Procedure que recebe via parâmetro dois valores decimais (numeric(18,2))
+e retorna via parâmetro de OUTPUT a média entre eles.*/
+CREATE OR ALTER PROCEDURE Atividade6
+	@Num1 numeric(18,2),
+	@Num2 numeric(18,2),
+	@Media numeric(18,2) OUTPUT
+AS
+BEGIN
+	SET @Media = (@Num1 + @Num2)/2
+END
+
+DECLARE @Num1 numeric(18,2), @Num2 numeric(18,2), @Media numeric(18,2)
+SET @Num1 = 2
+SET @Num2 = 3
+EXEC Atividade6 @Num1, @Num2, @Media OUTPUT
+PRINT @Media
