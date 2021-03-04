@@ -1,3 +1,5 @@
+/* Nome: Marcelo Zaguette Junior RA: 180998 */
+
 CREATE TABLE Raca(
 	IDRaca int Primary Key not null identity,
 	Nome varchar(100) not null,
